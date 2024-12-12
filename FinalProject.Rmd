@@ -1,0 +1,306 @@
+---
+title: "A study on effects of Healthcare Costs and Household Income on Premature Age-Adjusted Mortality Rate in US Counties"
+author: "540455982"
+output: pdf_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(sf)
+library(tidyr)
+library(broom)
+library(viridis)
+library(corrplot)
+library(vtable)
+library(ggpubr)
+library(gridExtra)
+library(usmap)
+```
+
+# Introduction 
+
+It has been widely studied that the impact of socioeconomic factors has always been a key area of interest in regards to public health.^1^ Among these factors, healthcare costs and household income are important determinants of health. Through this study, I aim to explore the role of these two predictors on the Premature Age-Adjusted Mortality(PAAM) across US counties. The expected outcome of this study is to establish the importance of economic stability, measured via median household income and affordable healthcare(healthcare costs). 
+
+The relationship between economic factors and health outcomes is already well documented in health literature. Household income and healthcare costs significantly influence the quality of care and overall health status.^2-5^ Part of the reason is that higher household income means access to better quality of healthcare, while lower healthcare costs allow more of the population to have access to health services. Another part is that individuals in higher income brackets have healthier living conditions and, can afford healthier lifestyles.^6^ Income also affects mental health and stress, contributing to a persons overall well-being.^7^ 
+
+Providing evidence from the data, and after controlling for predictors such as college education, prevalance of food insecurity and insufficient sleep which are correlated, there is still a significant correlation between healthcare costs and household income on the PAAM across US counties. The study hypothesis is that higher household income and lower healthcare costs are associated with lower age-adjusted mortality. By investigating this relationship, I aim to provide insights into the importance of these factors in shaping policy decisions regarding reducing mortality rates through timely and impactful economic and healthcare interventions.
+
+In the next section, I will divide the previous literature into 2 subsections, one each for correlation between household income and health, and the other for healthcare costs and health.
+
+\vspace{6mm}
+
+# Literature and theory
+
+## Household income and health
+
+Household income can be considered a key determinant of health, impacting access to health resources, healthcare and living conditions. Research by Cutler,Muney^8^ highlights that income is positively correlated to longevity and lower rates of chronic diseases. Several factors contribute to the fact that higher household income is generally associated with better health outcomes. First, individuals with higher incomes can afford healthier living practices, including safer housing, better nutrition and regular physical activity.^9^ Additionally, higher household income provides better access to healthcare services, including timely access to medical care and attention.^10^ 
+
+## Healthcare costs and health
+
+High healthcare costs can be a significant obstacle to accessing necessary medical aid. When the cost of medical services is high, families might delay or ignore treatment, leading to worse health outcomes and higher mortality.^11^ Past studies have shown that out-of-pocket healthcare expenses substantially impact health-seeking behaviour particularly in uninsured and low income households.^12^ Rise of healthcare costs can financially burden and negatively impact mental health, further contributing to poor health outcomes.^13^ 
+
+The theoretical foundation of this study is based on the social determinants of health, which links economic and social conditions to health outcomes.^14^ This study emphasizes the importance of addressing economic disparities and ensuring widespread access to healthcare to improve population health and reduce mortality. The study also highlights a relation between health and belief, suggesting that health behaviours are influenced by barriers to healthcare and a persons perception of health risks.^15^
+
+This research builds on these findings by examining the context on US counties while controlling for a set of variables to account for potential confounding factors. By limiting the focus to healthcare costs and household incomes, this research aims to provide an understanding on how these economic factors influence the PAAM and inform policy interventions aimed at reducing mortality and improving public health.
+
+\vspace{6mm}
+
+# Data and methodology 
+
+## Data
+
+The data for this study has been sourced from the County Health Rankings & Roadmaps programs, which is a collaboration between the Robert Wood Johnson Foundation and the University of Wisconsin Population Health Institute. This dataset provides comprehensive data on health outcomes and determinants for US counties. It includes variables such as PAAM, household income and healthcare costs, along with control variables such as education, food insecurity, mental distress, number of uninsured adults in the county, Insufficient sleep percent. Their detailed information is mentioned below:
+
+**Premature age-adjusted mortality (dependent variable):** PAAM is sourced from the CDC Wonder mortality data for the years 2014-2016. This variable specifies the PAAM for each US county and includes records for 3142 counties. Since this is the dependent variable, there is no need to recode the data, I am just renaming the column to PAAM in my final dataset for ease of use.
+
+**Household income (independent variable):** The median household income is sourced from Small Area Income and Poverty Estimates for the year 2016. This variable is one of the two independent variable selected for this study with 3142 records and a mean value of 49522 USD. Again, for ease of use, this has been renamed to "Household_Income" for model development.
+
+**Healthcare costs (independent variable):** This variable is sourced from Dartmouth Atlas of Health Care conducted during the year 2015 and is a key independent variable in determining the PAAM across US counties. It has been renamed to "Healthcare_Costs" for model development later. It has a mean value of 9630 USD with the minimum being 3896 and maximum as 19803 USD. 
+
+**Food insecurity:** This variable is sourced from Map the Meal Gap conducted during the year 2015 and is used as control variable in this study. It has been renamed to "Food_Insecurity" and shows a correlation with PAAM as well as the Independent variables (refer figure 1).
+
+**College Education:** This variable is sourced from American Community Survey, 5-year estimates and just describes the Percentage of adults ages 25-44 with some post-secondary education within a county. Again, this is used as a control variable as it shows high negative correlation with PAAM and postive correlation with household income (refer figure 1).
+
+**Insufficient sleep:** This variable is sourced from the Behavioral Risk Factor Surveillance System and is being controlled for in the model. It shows low correlation for both PAAM and the 2 independent variables. This combined with Food insecurity can be considered indicators of general well-being.
+
+\newpage
+
+## Methodology
+
+To examine the relationship between healthcare costs, household income and PAAM, I will be using a linear regression model. Linear regression allows us to estimate the direct effect of household income and healthcare costs on PAAM while controlling for other variables. The reason for selecting linear regression is that it allows us to quantify the relationship between dependent and independent variables in a simple and easy to understand manner while also being able to control for multiple confounding factors. Since the dependent variable is continuous, linear regression can prove to be a good fit for this study. Despite its advantages, linear regression assumes a linear relation and can be affected by residual confounding due to unmeasured variables. 
+
+The dataset will be analysed in depth to identify the relationship between the independent variables and PAAM. This will be done with the help of scatterplots and line of best fit, this allows us to gauge if the relation is a positive or a negative relation. First, as part of the pre-processing, the dataset is cleaned and filtered to select only the required variables and then merged with another dataset containing the "College_Education" variable. This merge is done on the FIPS code which is unique for each county. Next, standardization is performed on median household income and healthcare costs as they show high variability. 
+
+A limitation here is that external factors such as county demographics can introduce potential confounding as counties with high population of elderly people can skew results. Another potential limitation here is that of measurement error, since some people can falsely report their household income due to fear of social standing and even tax evasion. 
+
+\vspace{6mm}
+
+# Results
+
+## Descriptive Statistics
+
+```{r,warning=FALSE, message=FALSE, include=FALSE}
+
+data1 = read_csv("data/Book1.csv",show_col_types = FALSE,skip = 1)
+
+data1 = data1 %>% 
+  rename(PAAM = `Age-Adjusted Mortality`,
+         Food_Insecurity = `% Food Insecure`,
+         Insufficient_Sleep = `% Insufficient Sleep`,
+         Healthcare_Costs = `Costs`,
+         Household_Income = `Household Income`,
+         fips = FIPS) %>% 
+  select(fips,PAAM,Food_Insecurity,Insufficient_Sleep,Healthcare_Costs,Household_Income)
+
+data2 = read_csv("data/employmentdata.csv", skip=1)
+
+data_unemployment = data2 %>% 
+  rename(Education_College = `% Some College`,
+         fips = FIPS) %>% 
+  select(fips,Education_College)
+
+data_final = merge(data1,data_unemployment, on=fips)
+
+cor_data = cor(data_final[,2:7],use = "complete.obs")
+
+```
+
+```{r, include=FALSE}
+st1 = st(data_final[,3:7],out = "latex")
+
+```
+Table 1 shows some statistics about the variables selected for my model. We can see that household income has a big difference between minimum and maximum value and hence its required to be scaled as part of preprocessing.
+
+\begin{table}[!htbp] \centering \renewcommand*{\arraystretch}{1.1}\caption{Variable Statistics}\resizebox{0.8\textwidth}{!}{
+\begin{tabular}{lrrrrrrr}
+\\
+\hline
+\hline
+Variable & N & Mean & Std. Dev. & Min & Pctl. 25 & Pctl. 75 & Max \\ 
+\hline
+Food\_Insecurity & 3142 & 14 & 4.2 & 3 & 11 & 16 & 38 \\ 
+Insufficient\_Sleep & 3142 & 33 & 4.2 & 23 & 30 & 36 & 47 \\ 
+Healthcare\_Costs & 3135 & 9630 & 1500 & 3896 & 8627 & 10522 & 19803 \\ 
+Household\_Income & 3141 & 49522 & 12887 & 22045 & 41072 & 55308 & 134609 \\ 
+Education\_College & 3142 & 57 & 12 & 16 & 49 & 66 & 94\\ 
+\hline
+\hline
+\end{tabular}
+}
+\end{table}
+
+\vspace{5mm}
+
+It is also interesting to note that in the dataset there are a total of 3142 records, one each for each US county. This means that there are also some missing values for both household income and healthcare costs. To deal with this I have imputed the missing data based on the mean value of these variables.
+
+
+
+The correlation heatmap shows an initial negative correlation between PAAM and household income while showing a positive correlation between PAAM and healthcare costs. 
+
+```{r fig1, fig.cap = "Correlation Heatmap", message=FALSE, warning=FALSE}
+corrplot(cor_data, method="color",mar=c(0,0,2,0), diag = FALSE, type = "upper")
+```
+
+```{r, warning=FALSE, message=FALSE}
+
+plot1 = ggplot(data_final, aes(x = Healthcare_Costs, y = PAAM)) +
+  geom_point() +
+  geom_smooth(method = "lm", col = "skyblue") +
+  labs(title = "Premature Age-Adjusted Mortality vs Healthcare Costs",
+       x = "Healthcare Costs",
+       y = "Premature Age-Adjusted Mortality") +
+  theme(axis.title.y = element_text(size = 9)) + 
+  stat_cor(method='pearson')
+
+```
+
+
+```{r fig2, fig.cap = "Premature Age Adjusted Mortality vs Healthcare Costs",fig.height=7, fig.width=8, message=FALSE, warning=FALSE}
+grid.arrange(plot1, nrow=2.5)
+```
+
+\newpage
+
+## Heathcare Costs
+
+Figure 2 shows the relationship between rate of PAAM with the healthcare costs. A correlation coefficient of 0.46 indicates that a positive correlation between the two variables. This is highly significant as it shows that as healthcare costs rise so does the PAAM, and vice-versa which is corroborated by past literature. A P-value of <2.2^-16^ tells us that the correlation is statistically significant and gives strong evidence to reject the null hypothesis of no correlation, further indicating that healthcare costs do infact impact the PAAM.
+
+## Median Household Income
+
+\vspace{8mm}
+
+```{r, warning=FALSE, message=FALSE}
+
+plot2 = ggplot(data_final, aes(x = Household_Income, y = PAAM)) +
+  geom_point() +
+  geom_smooth(method = "lm", col = "skyblue") +
+  labs(title = "Premature Age-Adjusted Mortality vs Household Income",
+       x = "Household Income",
+       y = "Premature Age-Adjusted Mortality") +
+  stat_cor(method='pearson') +
+  scale_x_continuous(labels = scales::comma)
+
+```
+
+
+```{r fig3, fig.cap = "Premature Age Adjusted Mortality vs Household Income",fig.height=7, fig.width=8, message=FALSE, warning=FALSE}
+grid.arrange(plot2, nrow=2.5)
+```
+
+Figure 3 shows a scatterplot between PAAM and median household income. The correlation coefficient in this case is -0.67 which indicates a negative correlation between the two variables. This tells us that household income increases, the mortality rate goes down. This is inline with previous studies and a P-value of <2.2^-16^ tells us that this correlation is statistically significant and gives strong evidence to reject the null hypothesis and consider the alternate hypothesis justifying the fact that household income also impacts PAAM across counties.
+
+These two scatterplots show a general linear relationship between the two selected independent variables(median household income and healthcare costs) justifying the selection of linear regression for the final model development. Linear regression has the added advantage of the results being easy to interpret. After scaling the variables and imputing the missing data, the final model intercepts and coefficients should be easier to understand.
+
+```{r fig4,fig.cap = "County level map of the United States of America",fig.height=7, fig.width=8, message=FALSE, warning=FALSE}
+plot3 = plot_usmap(data = data_final, values = "PAAM", color = "black", size = .25) +
+  scale_fill_gradient(low = "green", high = "red", na.value = "transparent") +
+  labs(title = "Premature Age-Adjusted Mortality in US Counties") +
+  theme(legend.position = "right")
+
+plot4 = plot_usmap(data = data1, values = "Healthcare_Costs", color = "black", size = .25) +
+  scale_fill_gradient(low = "green", high = "red", na.value = "transparent") +
+  labs(title = "Healthcare costs in US Counties") +
+  theme(legend.position = "right")
+
+grid.arrange(plot3,plot4,nrow = 2)
+```
+
+Figure 4 below visualises the Premature Age-Adjusted Mortality as well as median household income across US counties. While this does not help us identify any particular geographic trends as to why PAAM is different in different regions, it does help us to visualise the high variations in both PAAM and household incomes across counties with some counties having above $125000 household income. This suggests that geographic location does not influence the selected variables and can be set aside for this study. 
+
+\newpage
+
+```{r, echo=FALSE}
+
+data_final[,5:6] = scale(data_final[,5:6])
+final_model = lm(PAAM~Household_Income+Healthcare_Costs+Education_College+Insufficient_Sleep+Food_Insecurity,data = data_final)
+
+
+coef_table <- data.frame(
+Coefficient = coef(final_model),
+Std_Error = summary(final_model)$coefficients[, 2], P_Value = summary(final_model)$coefficients[, 4]
+)
+
+coef_table$Lower_CI <- coef_table$Coefficient - 1.96 * coef_table$Std_Error 
+coef_table$Upper_CI <- coef_table$Coefficient + 1.96 * coef_table$Std_Error
+
+coef_table$CI_95 <- paste0("(", round(coef_table$Lower_CI, 3), ", ", round(coef_table$Upper_CI,3),")")
+# Create a new column for significance stars
+coef_table$Significance <- ifelse(coef_table$P_Value < 0.001, "***", ifelse(coef_table$P_Value < 0.01, "**",
+ifelse(coef_table$P_Value < 0.05, "*", ""))) # Combine the coefficient and significance columns
+coef_table$Coefficient <- paste0(round(coef_table$Coefficient, 3), coef_table$Significance)
+# Create the regression table using kable()
+table2 <- knitr::kable(
+coef_table[, c("Coefficient", "CI_95")], caption = "Model Summary",
+digits = 3,
+align = c("l", "c", "c"),
+col.names = c("Coefficient", "95%CI")
+) %>%
+kableExtra::kable_styling(latex_options = "striped", font_size = 10) %>% kableExtra::footnote(general = "Significance levels: *** p < 0.001, ** p < 0.01, * p < 0.05",
+general_title = "Note:",
+footnote_as_chunk = TRUE)
+
+table2
+
+```
+
+Table 2 highlights the final model coefficients along with their Confidence Intervals(CI). Since the variables Household_Income and Healthcare_Costs have been standardized, the model outputs more interpretable results. The intercept is 254.87 which means that when all the variables are zero then the base PAAM is approximately 254. The coefficient for Household Income is -35.29 which means that unit increase in Household Income results in a 35.29 decrease in PAAM keeping other variables constant indicative of a negative correlation between these two variables. The CI for this variable is (-38.78,-31.80). On the other hand, the coefficient for Healthcare Costs is 21.80 which implies that a unit increase in Healthcare costs results in a 21.80 increase in PAAM with a CI of (19.15,24.46). Looking at the P-values for both the independent variables (<2e^-16^), we see that both are highly significant to our dependent variable(PAAM). Keeping these results in mind, we can confidently reject the null hypothesis and consider the alternate hypothesis stating that Household Income and Healthcare Costs do impact PAAM across counties. This is inline with the literature, further validating my findings with this model. 
+
+
+# Conclusion 
+
+This study presents strong correlation of household income and healthcare costs to the premature age-adjusted mortality. After controlling for mechanisms such as college education and some factors of general health (Insufficient sleep and food insecurity), the two independent variables still showed strong correlation to the dependent variable. This allows us to reject the null hypothesis and consider the theory that higher healthcare costs and lower median household income lead to increase in a county's Premature age-adjusted mortality. 
+
+These findings are assisted by the health literature which also show similar findings, claiming that higher healthcare costs result in individuals hesitant towards healthcare services^16^. Limitations of this study are, firstly, external confounding factors can potentially alter the results such as mental distress. Mental distress is a mechanism which cannot be easily quantified and has the potential for high amounts of measurement error. Secondly, this study uses data sources from reliable organisations but since there was no oversight into the collection of this data, there is a potential for some error here. Lastly, there is potential for a study with comparison of these variables over a period of a few decades with a 10 year gap to reveal more detailed findings.
+
+The results highlight the importance of economic and healthcare policies in public health decision making. Policymakers and stakeholders should consider policies which enhance household incomes and reduce healthcare costs as part of the effort to improve county health. 
+
+\vspace{5mm}
+
+# References
+
+1. Adler, N. E., Boyce, T., Chesney, M. A., Folkman, S., & Syme, S. L. (1994). Socioeconomic Inequalities in Health: No Easy Solution. JAMA, 269(24), 3140-3145.
+
+2. Bartley, M. (1994). Unemployment and Ill Health: Understanding the Relationship. Journal of Epidemiology & Community Health, 48(4), 333-337.
+
+3. Benach, J., et al. (2014). Employment, Work, and Health Inequalities: A Global Perspective. International Journal of Health Services, 44(1), 109-134.
+
+4. McLaughlin, D. K., & Stokes, C. S. (2002). Income inequality and mortality in US counties: does minority racial concentration matter?. American journal of public health, 92(1), 99-104.
+
+5. Deaton, A. (2013). The Great Escape: Health, Wealth, and the Origins of Inequality. Princeton University Press.
+
+6. Grossman, M. (2006). Education and Nonmarket Outcomes. In E. A. Hanushek & F. Welch (Eds.), Handbook of the Economics of Education (Vol. 1, pp. 577-633). Elsevier.
+
+7. Gulliford, M., Figueroa-Munoz, J., Morgan, M., Hughes, D., Gibson, B., Beech, R., & Hudson, M. (2002). What Does 'Access to Health Care' Mean? Journal of Health Services Research & Policy, 7(3), 186-188.
+
+8. Cutler, D. M., & Lleras-Muney, A. (2006). Education and Health: Evaluating Theories and Evidence. NBER Working Paper No. 12352.
+
+9. Kington, R., & Smith, J. P. (1997). Socioeconomic Status and Racial and Ethnic Differences in Functional Status Associated with Chronic Diseases. American Journal of Public Health, 87(5), 805-810.
+
+10. Lynch, J. W., & Kaplan, G. A. (2000). Socioeconomic Position. In L. F. Berkman & I. Kawachi (Eds.), Social Epidemiology (pp. 13-35). Oxford University Press.
+
+11. Lynch, J., et al. (2004). Income Inequality and Mortality: Importance to Health of Individual Income, Psychosocial Environment or Material Conditions. British Medical Journal, 320(7243), 1200-1204.
+
+12. Marmot, M., et al. (2008). The Status Syndrome: How Social Standing Affects Our Health and Longevity. American Journal of Public Health, 98(9), 1651-1658.
+
+13. McWilliams, J. M., Meara, E., Zaslavsky, A. M., & Ayanian, J. Z. (2007). Health of Previously Uninsured Adults after Acquiring Medicare Coverage. JAMA, 298(24), 2886-2894.
+
+14. Rosenstock, I. M. (1974). The Health Belief Model and Preventive Health Behavior. Health Education Monographs, 2, 354-386.
+Shi, L., & Stevens, G. D. (2005). Vulnerability and Unmet Health Care Needs: The Influence of Multiple Risk Factors. Journal of General Internal Medicine, 20(2), 148-154.
+
+15. Solar, O., & Irwin, A. (2010). A Conceptual Framework for Action on the Social Determinants of Health. Social Determinants of Health Discussion Paper 2 (Policy and Practice). World Health Organization.
+
+16. Wilkinson, R. G., & Marmot, M. G. (2003). Social Determinants of Health: The Solid Facts. World Health Organization.
+
+\newpage
+
+
+$\text{\underline{Table 3: Full Model Summary}}$
+```{r, echo=FALSE}
+
+summary(final_model)
+
+```
